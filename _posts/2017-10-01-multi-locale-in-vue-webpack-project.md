@@ -40,13 +40,15 @@ $ yarn dev
 
 to see a browser tab pops with a page title and a caption.
 
+
+## [Stitching APIs](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/664924e580dfdb8ddf8247f0dd9b3db5424e1edb)
+
 Majority of the tweaks are going to be add-ons to the commponent of `Hello.vue`,
 to make it display a todo list
 (rest assured it's not going to be **yet another Todo MVC** but much much simpler).
 Checkout into the commit of `i18n attempt` to see it imports two modules:
 `T` for translation,
 and `services` for mocked API.
-(In case you only want to read the [commit diffs](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/664924e580dfdb8ddf8247f0dd9b3db5424e1edb)).
 And it now populates its todo list from Vue component's `created` hook which executes on its ... well, creation. 
 If the `async` keyword bothers you,
 you can safely take it as a mechanism to automagically make `Promise` synchronise.
@@ -58,7 +60,7 @@ sub in the rest of the arguments to the template string.
 Things look to be still 'in order' so far.
 But the code smell can quickly spread if we imagine the number of strings to translate increases:
 We don't want so many fields in `data` just to be used once in our template.
-What we look for is something like this `<h1>{{ T('title') }}</h1>`.
+What we look for is something like this {% raw %} `<h1>{{ T('title') }}</h1>` {% endraw %}
 Can we do that? Sure, by exposing `T` to DOM by adding it in `data` too...
 
 "That's even worse!" You might scream.
@@ -70,7 +72,9 @@ But let's not side-track that far into the Vue practices,
 but keep our demo simple by using a _stripped_ mechanism of plugin: mixin,
 as illustrated in the commit `i18n with mixin`.
 
-Once again, [commit diff](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/5c9d4396af2df72d86e228030b2d10c1f88db83c).
+
+## [Mixin](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/5c9d4396af2df72d86e228030b2d10c1f88db83c)
+
 What mixin does is either defining a set of behaviors or attributes common to the components that register it.
 Vue has an [intuitive way to merge duplcated attributes](https://vuejs.org/v2/guide/mixins.html#Option-Merging),
 and you can even define your own merge rules if they collide in a too unwieldy manner XD.
@@ -91,3 +95,12 @@ Vue.mixin({
 
 And now we can happily strip off all the imports of `T` in our components,
 and discard all the used-once-only fields in `data` ㋡
+
+
+## [New Languages](#)
+
+
+## [Building Meta](#)
+
+
+## [Custom Styling](#)
