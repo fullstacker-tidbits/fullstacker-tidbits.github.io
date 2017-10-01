@@ -4,12 +4,16 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+### Xie Chenhong
 
-### More Information
-
-A place to include any other types of information that you'd like to include about yourself.
+An ordinary fullstacker that does:
+- Database schema design (and a bit of tuning)
+- Backend logic architecture (mostly in Python, either Django or Flask)
+- HTTP daemon setup (mostly Nginx, and code Lua to script)
+- Web frontend (vanilla JS or Vue)
+- HTML+CSS prototyping (hates <IE10 support)
+- Basic tooling (Docker, Ansible, Webpack etc, but really no expert just whack till works)
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+chenhong dot xie at gmail dot com
