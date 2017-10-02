@@ -65,7 +65,7 @@ async created() {
 ```
 
 If the `async` keyword bothers you,
-you can safely take it as a mechanism to automagically make `Promise` synchronise.
+you can safely take it as a mechanism to automagically make `Promise` synchronous.
 Function `T` (modified from a Stackoverflow answer so long ago that I can't trace its origin) is defined in `locale/index.js`.
 
 ```javascript
@@ -200,9 +200,70 @@ Therefore, with this change,
 and be glad at a production build not polluted with unnecessary bloat.
 
 
-### [Building Meta](#)
-WIP
+### [Building Meta](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/7e0b564c439bd357cba6ead8c417a3d366a3d3b2)
+
+The core features are roughly complete with all the steps,
+but there is one thing important that all PM would require - customized meta header for SEO.
+It's just not acceptable to have Chinese audiences reading English search result and vice versa.
+
+So now suppose `title` tag and `og:title` meta tag should take value from `title` of `{locale}.js`.
+How do we cope with it?
+An easy _libraried_ solution is to use some `*-meta` package and it does work good for Google and Bing.
+The only trouble is that those are the two search engines execute synchronous JS code,
+but for the case of sharing to Facebook,
+the `index.html` page would be parsed as it is,
+resulting in an empyt page no room for customizing the behavior later on.
+
+Yet luckily, this is still a standard requirement that Googling gives almost direct answer:
+Customize the entry of `index.html` with [ejs](http://ejs.co),
+so that it works with parameterized generation;
+and parameters are slotted in from [html-webpack-plugin](https://github.com/jantimon/html-webpack-plugin) config.
+
+Another cool thing is that with the current setup,
+no extra packages are needed - `ejs` has is installed with `webpack-bundle-analyzer`.
+
+Below is the new head tag in `index.ejs`, renamed from `index.html`.
+
+```handlebars
+<head>
+  <meta charset="utf-8">
+  <title><%= htmlWebpackPlugin.options.title %></title>
+  <meta property="og:title" content="<%= htmlWebpackPlugin.options.title %>" />
+</head>
+```
+
+With the entry renamed of its suffix,
+naturally we should update the config files too:
+
+```javascript
+// webpack.dev.conf.js L28
+new HtmlWebpackPlugin({
+  filename: 'index.html',
+  template: 'index.ejs',  // <- here
+  inject: true
+})
+
+// webpack.prod.conf.js L52
+new HtmlWebpackPlugin({
+  filename: config.build.index,
+  template: 'index.ejs',  // <- here
+  inject: true
+  // ... some more conf continues
+```
+
+Now the dev page is populated with a value for title - `Webpack App`.
+Honestly I have no idea where it comes from but let's just put in the value we need.
+So we happily put `var T = require('../src/locales')` at the top of two webpack config files above,
+and `title: T('title)` in the config for `HtmlWebpackPlugin`, and restart yarn dev server ...
+then it screamed and exited with an error saying `export` in `locales/index.js` is unexpected.
+
+Experienced Node & JS developers may quickly identify the issue of mixing two styles of module standards in our locale files:
+CommonJS and ES6.
+The dev server and building process are Node based (CommonJS), but `import / export` is from ES6 standard.
+But fortunately an environment supporting ES6 module should usually supports CommonJS too.
+So let's just have the entire `locales` module conform to CommonJS
+by changing our `export default ...` to `module.exports = ...`,
+also remove the `.default` from the requiring of individual locale.
 
 
 ### [Custom Styling](#)
-WIP
