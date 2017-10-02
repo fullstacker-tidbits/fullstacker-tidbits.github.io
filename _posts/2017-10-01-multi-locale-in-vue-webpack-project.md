@@ -87,7 +87,7 @@ sub in the rest of the arguments to the template string.
 Things look to be still 'in order' so far.
 But the code smell can quickly spread if we imagine the number of strings to translate increases:
 We don't want so many fields in `data` just to be used once in our template.
-What we look for is something like this {% raw %} `<h1>{{ T('title') }}</h1>` {% endraw %}
+What we look for is something like {% raw %} `<h1>{{ T('title') }}</h1>` {% endraw %}
 Can we do that? Sure, by exposing `T` to DOM by adding it in `data` too...
 
 "That's even worse!" You might scream.
@@ -136,16 +136,19 @@ The locale entry now looks like:
 import cn from './cn';
 import en from './en';
 
-const properties = en;
 const properties = { cn, en }[process.env.LOCALE];
 ```
 
-And in `config/prod.js`, we added an environment variable `LOCALE: JSON.stringify(process.env.LOCALE)`.
-Easy as it may appear to be,
-there are two major gotchas in this line that cost me hours of debugging:
+And in `config/prod.js`, we added an environment variable
+
+```javascript
+LOCALE: JSON.stringify(process.env.LOCALE)
+```
+
+Easy it may appear, there are two major gotchas in this line that cost me hours of debugging:
 
 1. `prod.js` later serves as the basis of environment variable dictionary and it **overwrites all other environment variables**
-2. JSON.stringify is needed as `process.env` variables are directly **substituted** just like macro in C
+2. `JSON.stringify` is needed as `process.env` variables are directly **substituted** just like macro in C
 
 I think overwriting all environment variables could be out of safety concern;
 but honestly this is quite counter-intuitive IMHO.
@@ -163,7 +166,7 @@ it should behave just as you would expect it to be.
 ### [Dark Corner...](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/577817e8290a5a35937302891e3520363c29120c)
 
 Up until now everything is indeed quite decent,
-and I did celebrate in the work I've done by putting all that was introduced so far.
+and I did celebrate in the project at work after I've put all that was introduced so far.
 
 However, there is a very sneaky corner that I overlooked:
 After I run `yarn build` over the project and deployed my website,
@@ -193,12 +196,13 @@ const properties = require(`./${process.env.LOCALE}`).default;
 ESLint ignoring line is needed to appease my Linter configured user Airbnb standard.
 That line aside, we essentially required only one module per specified by `LOCALE`.
 Therefore, with this change,
-`dev` and `build` and `... serve` as last commit,
-and be glad at a production built not polluted with unnecessary bloat.
+`dev` and `build` and `{whatever-daemon} serve` as last commit,
+and be glad at a production build not polluted with unnecessary bloat.
 
-## [Building Meta](#)
+
+### [Building Meta](#)
 WIP
 
 
-## [Custom Styling](#)
+### [Custom Styling](#)
 WIP
