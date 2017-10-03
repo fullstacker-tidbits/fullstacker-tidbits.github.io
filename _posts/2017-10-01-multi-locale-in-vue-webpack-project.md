@@ -5,23 +5,27 @@ title: Multi-Locale in Vue Webpack Project
 
 Developing frontend applications with [Vue.js](https://github.com/vuejs/vue) is a fairly hassle-free experience,
 especially when using [vue-cli](https://github.com/vuejs/vue-cli) to bootstrap the structure.
-Our usually project choice is the default [webpack template](https://github.com/vuejs-templates/webpack) provided officially.
+When I work on my project,
+my usual choice is simply the default [webpack template](https://github.com/vuejs-templates/webpack) provided officially.
 The template has all things for local development nicely put together with a single command of `yarn dev`,
 and for deployment `yarn build`.
 
-Recently we encountered a case where the same copy of source code should be compileed into distributions of different languages.
+Recently we came across a case where the same copy of source code should be compiled into distributions of different languages.
 We didn't choose [vue-i18n](https://github.com/kazupon/vue-i18n) even though it is also an awesome tool,
 mainly because we are building the website under different domains,
-instead of one domain serving different folders.
+instead of one domain serving different languages by different folders.
 
 Here is what we did:
-We use the default vue webpack setup provided by vue-cli,
-and slowly adding on to it the customed i18n-ish features we need.
+We used the default vue webpack setup provided by vue-cli,
+and slowly adding to it the customed i18n-ish features we need.
 And this post will cover the features we built point by point.
+
 Since our website is an internal product with confidentiality and dirty bussiness logic that hinders understanding,
-I created a [project](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo) containing only the bare minimal to illustrate what we learned,
-and it also has cleaner commits (and maybe tags later on) to mark the evolving of the project,
+I created a [project](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo) containing only the bare minimal to illustrate what we learned.
+It also has cleaner commits to mark the evolution of the project,
 and yarn-lock to ensure the same version of libraries are installed for reproducible local runs.
+Each section of this post will explain a commit to the demo project,
+and the title is wired with the link that leads to the commit in GitHub.
 
 -----
 
@@ -29,6 +33,9 @@ _I'll try to make the tutorial as friendly as I can with my limited command of E
 but some basic knowledge of Vue and Webpack are preferred;
 even better if you have experience with the structure vue-cli scaffolds.
 Vue documents its webpack project structure nicely [here](https://vuejs-templates.github.io/webpack/)_
+
+
+### [Very Beginning](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/16f1da58ad0c9fbd1cf63af7a82cc15f6b95a751)
 
 If you clone the repo and checkout to the very first commit `vanilla`,
 you'll see almost nothing deviates from the originally generated template
@@ -42,16 +49,13 @@ $ yarn dev
 
 to see a browser tab pops with a page title and a caption.
 
-And from here on, all the section titles point to the github commit history.
-You are encouraged to read the post with either the code running or the commit diffs.
 
+### [Stitching API](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/664924e580dfdb8ddf8247f0dd9b3db5424e1edb)
 
-### [Stitching APIs](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/664924e580dfdb8ddf8247f0dd9b3db5424e1edb)
-
-Majority of the tweaks are going to be add-ons to the commponent of `Hello.vue`,
+Majority of the tweaks are going to be enhancements to the commponent of `Hello.vue`,
 to make it display a todo list
 (rest assured it's not going to be **yet another Todo MVC** but much much simpler).
-Checkout into the commit of `i18n attempt` to see it imports two modules:
+Checkout the commit of `i18n attempt` to see it imports two modules:
 `T` for translation,
 and `services` for mocked API.
 And it now populates its todo list from Vue component's `created` hook which executes on its ... well, creation.
@@ -66,7 +70,7 @@ async created() {
 
 If the `async` keyword bothers you,
 you can safely take it as a mechanism to automagically make `Promise` synchronous.
-Function `T` (modified from a Stackoverflow answer so long ago that I can't trace its origin) is defined in `locale/index.js`.
+Function `T` (modified from a Stackoverflow answer so long ago that I can't trace its origin) is defined in `locales/index.js`.
 
 ```javascript
 import en from './en';
@@ -88,27 +92,29 @@ Things look to be still 'in order' so far.
 But the code smell can quickly spread if we imagine the number of strings to translate increases:
 We don't want so many fields in `data` just to be used once in our template.
 What we look for is something like {% raw %} `<h1>{{ T('title') }}</h1>` {% endraw %}
-Can we do that? Sure, by exposing `T` to DOM by adding it in `data` too...
+Can we do that? Sure, by adding `T` to `data` so that it's exposed to DOM...
 
 "That's even worse!" You might scream.
-Surely it is very dirty exposing a **function** as **data**.
+Surely it's very dirty exposing a **function** as **data**.
 Besides, if majority of the components need to be internationalized,
 importing `T` again and again and registering it in `data` is just way too smelly.
-The most proper way to this issue is creating a custom plugin and install it on initiating Vue runtime.
+The most proper way to this issue is creating a custom plugin and install it on initializing Vue runtime.
 But let's not side-track that far into the Vue practices,
 but keep our demo simple by using a _stripped_ mechanism of plugin: mixin,
-as illustrated in the commit `i18n with mixin`.
+as illustrated in the commit `i18n with mixin`...
 
 
 ### [Mixin](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/5c9d4396af2df72d86e228030b2d10c1f88db83c)
 
-What mixin does is either defining a set of behaviors or attributes common to the components that register it.
+What mixin does is defining a set of behaviors or attributes common to the components that register it.
 Vue has an [intuitive way to merge duplcated attributes](https://vuejs.org/v2/guide/mixins.html#Option-Merging),
 and you can even define your own merge rules if they collide in a too unwieldy manner XD.
-For our case we just want to have a translation function registered for all componets.
+
+For our case we just want to have a translation function registered for _all_ componets,
+so we directly modify the behavior of the imported `Vue` instance.
 Also per Vue community's convention,
-such extended functionalities should be prefixed with a dollor sign,
-let's just conform to it:
+such extended functionalities should be prefixed with a dollor sign.
+So let's just conform to it:
 
 ```javascript
 import T from './locales';
@@ -147,53 +153,54 @@ LOCALE: JSON.stringify(process.env.LOCALE)
 
 Easy it may appear, there are two major gotchas in this line that cost me hours of debugging:
 
-1. `prod.js` later serves as the basis of environment variable dictionary and it **overwrites all other environment variables**
+1. `prod.js` later serves as the basis of environment variable dictionary,
+and it **discards all other environment variables**
 2. `JSON.stringify` is needed as `process.env` variables are directly **substituted** just like macro in C
 
-I think overwriting all environment variables could be out of safety concern;
-but honestly this is quite counter-intuitive IMHO.
+I think throwing all environment variables could be out of a safety concern;
+but IMHO this is quite counter-intuitive.
 My first impression over a glimpse of the folder structure would be that
 the environment variables are **added on top of existing ones**,
-never anticipate that as an overwrite.
+never anticipating it to discard all the unspecified.
 And the second gotcha pull so much of my hair out due to the mysterious
 "Uncaught ReferenceError: cn is not defined" error.
 
 In this commit, just export `LOCALE` as either `cn` or `en`, `yarn build` it,
 and serve `dist` folder in Nginx/Apache/Caddy/Python http.server/Node http,
-it should behave just as you would expect it to be.
+it should behave just as you would expect it to do.
 
 
 ### [Dark Corner...](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/577817e8290a5a35937302891e3520363c29120c)
 
 Up until now everything is indeed quite decent,
-and I did celebrate in the project at work after I've put all that was introduced so far.
+and I did celebrate in the project at work after I put all that was introduced so far.
 
 However, there is a very sneaky corner that I overlooked:
-After I run `yarn build` over the project and deployed my website,
-the built application seems slightly larger than usual...
+After I ran `yarn build` over the project and deployed my website,
+the built application seemed slightly larger than usual...
 
-The issue is that even I needed only one language support in a build,
-Webpack puts all languages into my compiled app.whateverhash.js.
+The issue was that even I needed only one language support in a build,
+Webpack put all languages into my compiled `app.whateverhash.js`.
 
 This can be harder to spot in this demo as the locale files are so tiny,
 and it would cause hardly any serious harm anyway;
 but in our case, with so many languages to support and so many text to substitute,
-accidentally including all the translations to the production build is no easy-peasy.
+accidentally including all the translations to the production build should not be taken easy-peasy.
 I won't paste the uglified code here but you can quickly search it to realize the redundancy.
 
 So what now?
 
 Obviously we need a way to conditionally import the locale.
-But the issue is that `import` [doesn't support conditional import](https://stackoverflow.com/questions/36367532/how-can-i-conditionally-import-an-es6-module).
+But the issue is that `import` [can't be done conditionally](https://stackoverflow.com/questions/36367532/how-can-i-conditionally-import-an-es6-module).
 Fortunately we can fallback to Node's `require` for this need.
-Just change everything in `locales/index.js` before `export` into the following 2 lines:
+Just change everything in `locales/index.js` before `export` line into the following:
 
 ```javascript
 // eslint-disable-next-line
 const properties = require(`./${process.env.LOCALE}`).default;
 ```
 
-ESLint ignoring line is needed to appease my Linter configured user Airbnb standard.
+ESLint line ignoring is needed to appease my Linter configured using Airbnb standard.
 That line aside, we essentially required only one module per specified by `LOCALE`.
 Therefore, with this change,
 `dev` and `build` and `{whatever-daemon} serve` as last commit,
@@ -202,15 +209,15 @@ and be glad at a production build not polluted with unnecessary bloat.
 
 ### [Building Meta](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/7e0b564c439bd357cba6ead8c417a3d366a3d3b2)
 
-The core features are roughly complete with all the steps,
+The core features are roughly complete with all the steps so far,
 but there is one thing important that all PM would require - customized meta header for SEO.
-It's just not acceptable to have Chinese audiences reading English search result and vice versa.
+It's just not acceptable to have English audiences reading Chinese meta in search result and vice versa.
 
 So now suppose `title` tag and `og:title` meta tag should take value from `title` of `{locale}.js`.
 How do we cope with it?
 An easy _libraried_ solution is to use some `*-meta` package and it does work good for Google and Bing.
-The only trouble is that those are the two search engines execute synchronous JS code,
-but for the case of sharing to Facebook,
+The only trouble is that those are pretty much the only two search engines execute synchronous JS code,
+and for the case of sharing to Facebook,
 the `index.html` page would be parsed as it is,
 resulting in an empyt page no room for customizing the behavior later on.
 
@@ -252,18 +259,55 @@ new HtmlWebpackPlugin({
 ```
 
 Now the dev page is populated with a value for title - `Webpack App`.
-Honestly I have no idea where it comes from but let's just put in the value we need.
-So we happily put `var T = require('../src/locales')` at the top of two webpack config files above,
+Honestly I have no clue where it comes but let's just ignore and put in the value we need.
+So we happily add `var T = require('../src/locales')` at the top of two webpack config files modified above,
 and `title: T('title)` in the config for `HtmlWebpackPlugin`, and restart yarn dev server ...
 then it screamed and exited with an error saying `export` in `locales/index.js` is unexpected.
 
 Experienced Node & JS developers may quickly identify the issue of mixing two styles of module standards in our locale files:
 CommonJS and ES6.
 The dev server and building process are Node based (CommonJS), but `import / export` is from ES6 standard.
-But fortunately an environment supporting ES6 module should usually supports CommonJS too.
+But fortunately an environment supporting ES6 module should usually support CommonJS too.
 So let's just have the entire `locales` module conform to CommonJS
-by changing our `export default ...` to `module.exports = ...`,
+by changing all `export default ...` to `module.exports = ...`,
 also remove the `.default` from the requiring of individual locale.
 
 
-### [Custom Styling](#)
+### [Custom Styling](https://github.com/fullstacker-tidbits/vue-webpack-multi-locale-demo/commit/991b9fdfdbdc10cc6e65295357cdf2d05b5491ab)
+
+This section is more of a bonus feature that we built.
+Our regional PM reported that some languages don't render nicely under our universal font setting,
+and suggested us of corresponding "better" fonts to change.
+For our example project, without loss of generality,
+let's just imagine we want to change Chinese compile to be rendered in dark gray,
+and the English to black.
+
+Following the same rationale we have been applying,
+we create two stylesheets in `assets` folder to define the default color of body as follows:
+
+```css
+/* en.css */
+body {
+  color: black;
+}
+
+/* cn.css */
+body {
+  color: darkgray;
+}
+```
+
+And to apply the style conditionally to our environment variable,
+we `require` the corresponding sheet in global entry...
+
+```javascript
+// main.js L5
+
+// eslint-disable-next-line
+require(`./assets/${process.env.LOCALE}.css`);
+```
+
+And sure enough, it's working as we expect!
+
+And stop the dev server, export another locale value,
+restart the dev server again ... to see it works too!

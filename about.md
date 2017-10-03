@@ -17,3 +17,5 @@ An ordinary fullstacker that does:
 ### Contact me
 
 chenhong dot xie at gmail dot com
+
+_Unless specified otherwise, the posts in this blog are MIT licensed_
