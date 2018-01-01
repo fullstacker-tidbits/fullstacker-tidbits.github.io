@@ -46,7 +46,8 @@ as none of us had prior experience constructing such a site using frontend tooli
 The places I stumbled upon were transition effects and state management.
 The transition effects bit me mainly because I didn't have enough experience with CSS,
 and our HTML/CSS slicer worked mainly with jQuery stuff alone previously.
-State management side-tracked my development as I was not sure whether to learn Vuex or RxJS back then.
+State management side-tracked my development as back then I was not sure whether to learn Vuex alone,
+or design the entire page workflow base on stream API (what a naive thought isn't it).
 In the end, I dug through the transition document for Vue and found what I need,
 and stick with the popular choice of using Vuex for state management.
 
