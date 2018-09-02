@@ -1,6 +1,7 @@
 ---
 layout: post
 title: Tech Retrospection on My 2017
+draft: true
 ---
 
 The year 2017 has witnessed a lot of my growth - some were easy while some with struggles.
